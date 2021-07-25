@@ -1,10 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:hypeapp/views/constants.dart';
 
 import 'package:hypeapp/views/information/edit_password.dart';
-import 'package:hypeapp/main.dart';
-import 'package:hypeapp/various.dart';
+import 'package:hypeapp/views/various.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -37,6 +39,7 @@ class _EditInfoPageState extends State<EditInfoPage> {
 
   //VALIDACION
   final formKey = GlobalKey<FormState>();
+  final box = GetStorage();
 
   //SELECT
   bool visualizar = false;
@@ -48,7 +51,7 @@ class _EditInfoPageState extends State<EditInfoPage> {
 
   Future nacionalidades() async {
     var response = await http.post(
-      Uri.parse("http://10.0.0.7/hypeapp/hypeapp_php/basic_controller.php"),
+      Uri.parse(SERVIDOR),
       body: {"tipo": "nacionalidades"},
     );
 
@@ -66,19 +69,14 @@ class _EditInfoPageState extends State<EditInfoPage> {
       }
     } else {
       messageSimple("No se ha podido realizar la conexion");
-      Navigator.of(context).pop();
+      _informacionConseguida = false;
     }
   }
 
   Future getInformacion() async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-
     var response = await http.post(
-      Uri.parse("http://10.0.0.7/hypeapp/hypeapp_php/basic_controller.php"),
-      body: {
-        "tipo": "visualizar informacion",
-        "email": preferences.getString("email")
-      },
+      Uri.parse(SERVIDOR),
+      body: {"tipo": "visualizar informacion", "email": box.read("email")},
     );
     if (response.statusCode == 200) {
       var data = json.decode(response.body);
@@ -110,12 +108,10 @@ class _EditInfoPageState extends State<EditInfoPage> {
   }
 
   Future revisarUsuario() async {
-    var response = await http.post(
-        Uri.parse("http://10.0.0.7/hypeapp/hypeapp_php/basic_controller.php"),
-        body: {
-          "tipo": "revisar proveedor",
-          "email": informacionInicial["email"]
-        });
+    var response = await http.post(Uri.parse(SERVIDOR), body: {
+      "tipo": "revisar proveedor",
+      "email": informacionInicial["email"]
+    });
 
     if (response.statusCode == 200) {
       var data = json.decode(response.body);
@@ -150,20 +146,18 @@ class _EditInfoPageState extends State<EditInfoPage> {
         nacionalidadController.text = key;
       }
     });
-    var response = await http.post(
-        Uri.parse("http://10.0.0.7/hypeapp/hypeapp_php/basic_controller.php"),
-        body: {
-          "tipo": "editar informacion",
-          "nombres": nameController.text,
-          "ap_pat": paternoController.text,
-          "ap_mat": maternoController.text,
-          "email_anterior": informacionInicial['email'],
-          "email_nuevo": emailController.text,
-          "empresa": empresaController.text,
-          "tel": telController.text,
-          "nacionalidad": nacionalidadController.text,
-          "estatus": estatusController.text
-        });
+    var response = await http.post(Uri.parse(SERVIDOR), body: {
+      "tipo": "editar informacion",
+      "nombres": nameController.text,
+      "ap_pat": paternoController.text,
+      "ap_mat": maternoController.text,
+      "email_anterior": informacionInicial['email'],
+      "email_nuevo": emailController.text,
+      "empresa": empresaController.text,
+      "tel": telController.text,
+      "nacionalidad": nacionalidadController.text,
+      "estatus": estatusController.text
+    });
 
     if (response.statusCode == 200) {
       var data = json.decode(response.body);
@@ -203,89 +197,92 @@ class _EditInfoPageState extends State<EditInfoPage> {
 
 //CERRAR SESION
   Future logOut(BuildContext context) async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    preferences.remove("email");
-    preferences.remove("type");
     limpiarControllers();
     messageSimple("Se ha cerrado sesion");
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomePage(),
-        ));
+    Get.offNamed("/home");
   }
 
   @override
   Widget build(BuildContext context) {
-    return _loadingFull ? LoadingFull() : ventanaMostrar();
-  }
-
-  Widget ventanaMostrar() {
-    return _informacionConseguida
-        ? Scaffold(
-            resizeToAvoidBottomInset: true,
-            backgroundColor: Colors.white,
-            body: SingleChildScrollView(
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 40),
-                height: MediaQuery.of(context).size.height - 50,
-                width: double.infinity,
-                child: ListView(
-                  children: <Widget>[
-                    Column(
+    return _loadingFull
+        ? WillPopScope(onWillPop: () async => false, child: LoadingFull())
+        : _informacionConseguida
+            ? Scaffold(
+                appBar: AppBar(
+                  elevation: 0.0,
+                  automaticallyImplyLeading: false,
+                  centerTitle: true,
+                  title: new Text(
+                    ("Información"),
+                    style: TextStyle(
+                      fontSize: fontSize_AppBar,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  backgroundColor: bgColor_AppBar,
+                ),
+                resizeToAvoidBottomInset: true,
+                backgroundColor: Colors.white,
+                body: SingleChildScrollView(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 40),
+                    height: MediaQuery.of(context).size.height - 50,
+                    width: double.infinity,
+                    child: ListView(
                       children: <Widget>[
-                        SizedBox(
-                          height: 10,
+                        Column(
+                          children: <Widget>[
+                            SizedBox(
+                              height: 10,
+                            ),
+                            Text(
+                              "Hype App",
+                              style: TextStyle(
+                                  fontSize: 15, color: Colors.grey[700]),
+                            )
+                          ],
                         ),
-                        Text(
-                          "Hype App",
-                          style:
-                              TextStyle(fontSize: 15, color: Colors.grey[700]),
-                        )
+                        Form(
+                          key: formKey,
+                          child: Column(
+                            children: <Widget>[
+                              inputFile(
+                                  label: "Nombres",
+                                  nameController: nameController,
+                                  maxLength: "80"),
+                              inputFile(
+                                  label: "Apellido Paterno",
+                                  nameController: paternoController,
+                                  maxLength: "40"),
+                              inputFile(
+                                  label: "Apellido Materno",
+                                  nameController: maternoController,
+                                  maxLength: "40"),
+                              inputFile(
+                                  label: "Correo electrónico",
+                                  nameController: emailController,
+                                  maxLength: "50"),
+                              dropdowns(),
+                              inputFile(
+                                  label: "Empresa",
+                                  nameController: empresaController,
+                                  maxLength: "50"),
+                              inputFile(
+                                  label: "Teléfono",
+                                  nameController: telController,
+                                  maxLength: "10"),
+                            ],
+                          ),
+                        ),
+                        buttons(),
                       ],
                     ),
-                    Form(
-                      key: formKey,
-                      child: Column(
-                        children: <Widget>[
-                          inputFile(
-                              label: "Nombres",
-                              nameController: nameController,
-                              maxLength: "80"),
-                          inputFile(
-                              label: "Apellido Paterno",
-                              nameController: paternoController,
-                              maxLength: "40"),
-                          inputFile(
-                              label: "Apellido Materno",
-                              nameController: maternoController,
-                              maxLength: "40"),
-                          inputFile(
-                              label: "Correo electrónico",
-                              nameController: emailController,
-                              maxLength: "50"),
-                          dropdownNacionalidad(),
-                          dropdownEstatus(),
-                          inputFile(
-                              label: "Empresa",
-                              nameController: empresaController,
-                              maxLength: "50"),
-                          inputFile(
-                              label: "Teléfono",
-                              nameController: telController,
-                              maxLength: "10"),
-                        ],
-                      ),
-                    ),
-                    buttons(),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          )
-        : Center(
-            child: Text("La información no se ha podido cargar"),
-          );
+              )
+            : Center(
+                child: Text("La información no se ha podido cargar"),
+              );
   }
 
   Widget buttons() {
@@ -537,82 +534,89 @@ class _EditInfoPageState extends State<EditInfoPage> {
     );
   }
 
-  Widget dropdownNacionalidad() {
+  Widget dropdowns() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(
-          "Nacionalidad",
-          style: TextStyle(
-              fontSize: 15, fontWeight: FontWeight.w400, color: Colors.black87),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              "Nacionalidad",
+              style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.black87),
+            ),
+            SizedBox(height: 5),
+            DropdownSearch<String>(
+              enabled: visualizar == false ? false : true,
+              mode: Mode.MENU,
+              showSelectedItem: true,
+              items: nacionalidadesMap.values.toList(),
+              hint: "Seleccionar nacionalidad",
+              onChanged: (data) {
+                setState(() {
+                  nacionalidadController.text = data.toString();
+                });
+              },
+              selectedItem: visualizar == false
+                  ? nacionalidadesMap[informacionInicial['idNacionalidad']]
+                  : nacionalidadController.text,
+              validator: (item) {
+                return validarDropDown(item);
+              },
+              dropdownSearchDecoration: InputDecoration(
+                  contentPadding:
+                      EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey[400]!),
+                  ),
+                  border: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey[400]!))),
+            ),
+            SizedBox(height: 10),
+          ],
         ),
-        SizedBox(height: 5),
-        DropdownSearch<String>(
-          enabled: visualizar == false ? false : true,
-          mode: Mode.MENU,
-          showSelectedItem: true,
-          items: nacionalidadesMap.values.toList(),
-          hint: "Seleccionar nacionalidad",
-          onChanged: (data) {
-            setState(() {
-              nacionalidadController.text = data.toString();
-            });
-          },
-          selectedItem: visualizar == false
-              ? nacionalidadesMap[informacionInicial['idNacionalidad']]
-              : nacionalidadController.text,
-          validator: (item) {
-            return validarDropDown(item);
-          },
-          dropdownSearchDecoration: InputDecoration(
-              contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 10),
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey[400]!),
-              ),
-              border: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey[400]!))),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              "Estatus",
+              style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.black87),
+            ),
+            SizedBox(height: 5),
+            DropdownSearch<String>(
+              enabled: visualizar == false ? false : true,
+              selectedItem: visualizar == false
+                  ? informacionInicial['estatus']
+                  : estatusController.text,
+              mode: Mode.MENU,
+              showSelectedItem: true,
+              items: estatusList,
+              hint: "Seleccionar estatus",
+              onChanged: (data) {
+                setState(() {
+                  estatusController.text = data.toString();
+                });
+              },
+              validator: (item) {
+                return validarDropDown(item);
+              },
+              dropdownSearchDecoration: InputDecoration(
+                  contentPadding:
+                      EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey[400]!),
+                  ),
+                  border: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey[400]!))),
+            ),
+            SizedBox(height: 10),
+          ],
         ),
-        SizedBox(height: 10),
-      ],
-    );
-  }
-
-  Widget dropdownEstatus() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          "Estatus",
-          style: TextStyle(
-              fontSize: 15, fontWeight: FontWeight.w400, color: Colors.black87),
-        ),
-        SizedBox(height: 5),
-        DropdownSearch<String>(
-          enabled: visualizar == false ? false : true,
-          selectedItem: visualizar == false
-              ? informacionInicial['estatus']
-              : estatusController.text,
-          mode: Mode.MENU,
-          showSelectedItem: true,
-          items: estatusList,
-          hint: "Seleccionar estatus",
-          onChanged: (data) {
-            setState(() {
-              estatusController.text = data.toString();
-            });
-          },
-          validator: (item) {
-            return validarDropDown(item);
-          },
-          dropdownSearchDecoration: InputDecoration(
-              contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 10),
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey[400]!),
-              ),
-              border: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey[400]!))),
-        ),
-        SizedBox(height: 10),
       ],
     );
   }

@@ -1,11 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:hypeapp/views/constants.dart';
 
 //DIRECTORIO
-import 'package:hypeapp/various.dart';
+import 'package:hypeapp/views/various.dart';
 
 class SignupPage extends StatefulWidget {
   _SignupPageState createState() => _SignupPageState();
@@ -33,9 +35,9 @@ class _SignupPageState extends State<SignupPage> {
     super.dispose();
   }
 
-  Future nacionalidades() async {
+  Future<void> nacionalidades() async {
     var response = await http.post(
-      Uri.parse("http://10.0.0.7/hypeapp/hypeapp_php/basic_controller.php"),
+      Uri.parse(SERVIDOR),
       body: {"tipo": "nacionalidades"},
     );
 
@@ -52,13 +54,12 @@ class _SignupPageState extends State<SignupPage> {
       }
     } else {
       messageSimple("No se ha podido realizar la conexion");
-      Navigator.of(context).pop();
     }
   }
 
-  Future perfiles() async {
+  Future<void> perfiles() async {
     var response = await http.post(
-      Uri.parse("http://10.0.0.7/hypeapp/hypeapp_php/basic_controller.php"),
+      Uri.parse(SERVIDOR),
       body: {"tipo": "perfiles"},
     );
 
@@ -75,13 +76,12 @@ class _SignupPageState extends State<SignupPage> {
       }
     } else {
       messageSimple("No se ha podido realizar la conexion");
-      Navigator.of(context).pop();
     }
   }
 
   //INSERT INTO
 
-  Future registro() async {
+  Future<void> registro() async {
     nacionalidadesMap.forEach((key, value) {
       if (value == nacionalidadController.text) {
         nacionalidadController.text = key;
@@ -92,20 +92,18 @@ class _SignupPageState extends State<SignupPage> {
         perfilController.text = key;
       }
     });
-    var response = await http.post(
-        Uri.parse("http://10.0.0.7/hypeapp/hypeapp_php/basic_controller.php"),
-        body: {
-          "tipo": "registro",
-          "nombres": nameController.text,
-          "ap_pat": paternoController.text,
-          "ap_mat": maternoController.text,
-          "email": emailController.text,
-          "empresa": empresaController.text,
-          "tel": telController.text,
-          "password": passController.text,
-          "nacionalidad": nacionalidadController.text,
-          "perfil": perfilController.text
-        });
+    var response = await http.post(Uri.parse(SERVIDOR), body: {
+      "tipo": "registro",
+      "nombres": nameController.text,
+      "ap_pat": paternoController.text,
+      "ap_mat": maternoController.text,
+      "email": emailController.text,
+      "empresa": empresaController.text,
+      "tel": telController.text,
+      "password": passController.text,
+      "nacionalidad": nacionalidadController.text,
+      "perfil": perfilController.text
+    });
     if (response.statusCode == 200) {
       var data = json.decode(response.body);
       print(data);
@@ -114,7 +112,7 @@ class _SignupPageState extends State<SignupPage> {
         setState(() {
           _loading = false;
         });
-        Navigator.of(context).pop();
+        Get.back();
       } else if (data["resp"] == "fail") {
         String message = "";
         switch (data["body"]) {
@@ -122,7 +120,8 @@ class _SignupPageState extends State<SignupPage> {
             message = "No se ha podido realizar el registro";
             break;
           default:
-            message = "No se ha podido llevar a cabo la operacion";
+            message =
+                "No se ha podido llevar a cabo la operacion, volver a intentar";
             break;
         }
         messageSimple(message);
@@ -131,11 +130,10 @@ class _SignupPageState extends State<SignupPage> {
         });
       }
     } else {
-      messageSimple("No se ha podido realizar la conexion");
+      messageSimple("No se ha podido realizar la conexion, volver a intentar");
       setState(() {
         _loading = false;
       });
-      Navigator.of(context).pop();
     }
   }
 
@@ -150,7 +148,7 @@ class _SignupPageState extends State<SignupPage> {
         backgroundColor: Colors.white,
         leading: IconButton(
           onPressed: () {
-            Navigator.pop(context);
+            Get.back();
           },
           icon: Icon(
             Icons.arrow_back_ios,
@@ -212,8 +210,7 @@ class _SignupPageState extends State<SignupPage> {
                         label: "Teléfono",
                         nameController: telController,
                         maxLength: "10"),
-                    dropdownNacionalidad(),
-                    dropdownPerfil(),
+                    dropdowns(),
                     inputFile(
                         label: "Password",
                         obscureText: true,
@@ -237,120 +234,125 @@ class _SignupPageState extends State<SignupPage> {
   }
 
   Widget buttons() {
-    return _loading == false ? buttonSignUp() : loadingSimple();
+    return _loading == true
+        ? WillPopScope(onWillPop: () async => false, child: loadingSimple())
+        : Column(
+            children: <Widget>[
+              Container(
+                padding: EdgeInsets.only(top: 3, left: 3),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(50),
+                    border: Border(
+                      bottom: BorderSide(color: Colors.black),
+                      top: BorderSide(color: Colors.black),
+                      left: BorderSide(color: Colors.black),
+                      right: BorderSide(color: Colors.black),
+                    )),
+                child: MaterialButton(
+                  minWidth: double.infinity,
+                  height: 60,
+                  onPressed: () {
+                    //registro
+                    if (_formKey.currentState!.validate()) {
+                      _formKey.currentState!.save();
+                      setState(() {
+                        _loading = true;
+                      });
+                      registro();
+                    }
+                  },
+                  color: Color(0xff08497F),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  child: Text(
+                    "Registrar",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 18,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
   }
 
-  Widget buttonSignUp() {
+  Widget dropdowns() {
     return Column(
       children: <Widget>[
-        Container(
-          padding: EdgeInsets.only(top: 3, left: 3),
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(50),
-              border: Border(
-                bottom: BorderSide(color: Colors.black),
-                top: BorderSide(color: Colors.black),
-                left: BorderSide(color: Colors.black),
-                right: BorderSide(color: Colors.black),
-              )),
-          child: MaterialButton(
-            minWidth: double.infinity,
-            height: 60,
-            onPressed: () {
-              //registro
-              if (_formKey.currentState!.validate()) {
-                _formKey.currentState!.save();
-                setState(() {
-                  _loading = true;
-                });
-                registro();
-              }
-            },
-            color: Color(0xff08497F),
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(50),
-            ),
-            child: Text(
-              "Registrar",
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              "Nacionalidad",
               style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 18,
-                color: Colors.white,
-              ),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.black87),
             ),
-          ),
+            SizedBox(height: 5),
+            DropdownSearch<String>(
+              mode: Mode.MENU,
+              enabled: _loading == false ? true : false,
+              showSelectedItem: true,
+              items: nacionalidadesMap.values.toList(),
+              hint: "Seleccionar nacionalidad",
+              onChanged: (data) {
+                nacionalidadController.text = data.toString();
+              },
+              validator: (item) {
+                return validarDropDown(item);
+              },
+              dropdownSearchDecoration: InputDecoration(
+                  contentPadding:
+                      EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey[400]!),
+                  ),
+                  border: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey[400]!))),
+            ),
+            SizedBox(height: 10),
+          ],
         ),
-      ],
-    );
-  }
-
-  Widget dropdownNacionalidad() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          "Nacionalidad",
-          style: TextStyle(
-              fontSize: 15, fontWeight: FontWeight.w400, color: Colors.black87),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              "Perfil",
+              style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.black87),
+            ),
+            SizedBox(height: 5),
+            DropdownSearch<String>(
+              enabled: _loading == false ? true : false,
+              mode: Mode.MENU,
+              showSelectedItem: true,
+              items: perfilesMap.values.toList(),
+              hint: "Seleccionar perfil",
+              onChanged: (data) {
+                perfilController.text = data.toString();
+              },
+              validator: (value) {
+                return validarDropDown(value);
+              },
+              dropdownSearchDecoration: InputDecoration(
+                  contentPadding:
+                      EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey[400]!),
+                  ),
+                  border: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey[400]!))),
+            ),
+            SizedBox(height: 10),
+          ],
         ),
-        SizedBox(height: 5),
-        DropdownSearch<String>(
-          mode: Mode.MENU,
-          enabled: _loading == false ? true : false,
-          showSelectedItem: true,
-          items: nacionalidadesMap.values.toList(),
-          hint: "Seleccionar nacionalidad",
-          onChanged: (data) {
-            nacionalidadController.text = data.toString();
-          },
-          validator: (item) {
-            return validarDropDown(item);
-          },
-          dropdownSearchDecoration: InputDecoration(
-              contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 10),
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey[400]!),
-              ),
-              border: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey[400]!))),
-        ),
-        SizedBox(height: 10),
-      ],
-    );
-  }
-
-  Widget dropdownPerfil() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          "Perfil",
-          style: TextStyle(
-              fontSize: 15, fontWeight: FontWeight.w400, color: Colors.black87),
-        ),
-        SizedBox(height: 5),
-        DropdownSearch<String>(
-          enabled: _loading == false ? true : false,
-          mode: Mode.MENU,
-          showSelectedItem: true,
-          items: perfilesMap.values.toList(),
-          hint: "Seleccionar perfil",
-          onChanged: (data) {
-            perfilController.text = data.toString();
-          },
-          validator: (value) {
-            return validarDropDown(value);
-          },
-          dropdownSearchDecoration: InputDecoration(
-              contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 10),
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey[400]!),
-              ),
-              border: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey[400]!))),
-        ),
-        SizedBox(height: 10),
       ],
     );
   }

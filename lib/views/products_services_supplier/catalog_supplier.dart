@@ -2,21 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 //DIRECTORIO
-import 'package:hypeapp/views/catalog/foundCatalog.dart';
+import 'package:hypeapp/views/products_services_supplier/found_catalog_supplier.dart';
+import 'package:hypeapp/views/products_services_supplier/crud_supplier.dart';
 
 // ignore: camel_case_types
-class ProductsServicesCatalogPage extends StatefulWidget {
-  _ProductsServicesCatalogState createState() =>
-      _ProductsServicesCatalogState();
+class ProductsServicesSupplierPage extends StatefulWidget {
+  _ProductsServicesSupplierPage createState() =>
+      _ProductsServicesSupplierPage();
 }
 
-class _ProductsServicesCatalogState extends State<ProductsServicesCatalogPage> {
+class _ProductsServicesSupplierPage
+    extends State<ProductsServicesSupplierPage> {
   int _totalPS = 3; //Contador del total de productos y servicios
   //int _totalPS = products.length;
   int _filtercount = 0; //Contador del filtro
 
   List<int> selectedIndexList = <int>[];
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -24,6 +25,41 @@ class _ProductsServicesCatalogState extends State<ProductsServicesCatalogPage> {
         Filtro(_filtercount),
         Flexible(
           child: _buildGrid(),
+        ),
+        Container(
+          padding: EdgeInsets.only(top: 3, left: 3),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(50),
+              border: Border(
+                bottom: BorderSide(color: Colors.black),
+                top: BorderSide(color: Colors.black),
+                left: BorderSide(color: Colors.black),
+                right: BorderSide(color: Colors.black),
+              )),
+          child: MaterialButton(
+            minWidth: 300.0,
+            height: 60,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => AgregarProductosServicesPage()),
+              );
+            },
+            color: Color(0xff08497F),
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(50),
+            ),
+            child: Text(
+              "Agregar",
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 18,
+                color: Colors.white,
+              ),
+            ),
+          ),
         ),
       ],
     );
@@ -46,13 +82,21 @@ class _ProductsServicesCatalogState extends State<ProductsServicesCatalogPage> {
               children: <Widget>[
                 GestureDetector(
                   onTap: () {
-                    if (!selectedIndexList.contains(index)) {
+                    if (!selectedIndexList.contains(index) ||
+                        selectedIndexList.contains(index)) {
                       selectedIndexList.add(index);
                       print("Seleccionado $index");
-                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FoundCatalogoTile(index),
+                        ),
+                      );
+                    }
+                    /*else {
                       selectedIndexList.remove(index);
                       print("No Seleccionado $index");
-                    }
+                    }*/
                   },
                   child: Container(
                     width: 170,
@@ -321,4 +365,40 @@ class _FiltroState extends State<Filtro> {
       ),
     );
   }
+}
+
+Widget buttonAdd() {
+  return Column(
+    children: <Widget>[
+      Container(
+        padding: EdgeInsets.only(top: 3, left: 3),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(50),
+            border: Border(
+              bottom: BorderSide(color: Colors.black),
+              top: BorderSide(color: Colors.black),
+              left: BorderSide(color: Colors.black),
+              right: BorderSide(color: Colors.black),
+            )),
+        child: MaterialButton(
+          minWidth: double.infinity,
+          height: 60,
+          onPressed: () {},
+          color: Color(0xff08497F),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: Text(
+            "Agregar",
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 18,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
 }

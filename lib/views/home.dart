@@ -1,29 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-//Directorio
-import 'package:hypeapp/login.dart';
-import 'package:hypeapp/signup.dart';
-import 'package:hypeapp/organizer.dart';
-import 'package:hypeapp/supplier.dart';
-
-void main() async {
-  //Revisa si existe una sesion abierta o no.
-  WidgetsFlutterBinding.ensureInitialized();
-  SharedPreferences _preferences = await SharedPreferences.getInstance();
-  var _type = _preferences.getString("type");
-  runApp(MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: _type == null
-          ? HomePage()
-          : _type == "Proveedor"
-              ? SupplierPage()
-              : _type == "Organizador"
-                  ? OrganizerPage()
-                  : HomePage()));
-}
+import 'package:get/get.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -43,9 +21,7 @@ class _HomePageState extends State<HomePage> {
             width: double.infinity,
             height: MediaQuery.of(context).size.height,
             padding: EdgeInsets.symmetric(horizontal: 30, vertical: 50),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
+            child: ListView(
               children: <Widget>[
                 Column(
                   children: <Widget>[
@@ -70,7 +46,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
                 Container(
-                  height: MediaQuery.of(context).size.height / 3,
+                  height: MediaQuery.of(context).size.height / 2.2,
                   decoration: BoxDecoration(
                       image: DecorationImage(
                           image: AssetImage("assets/welcome.png"))),
@@ -81,10 +57,7 @@ class _HomePageState extends State<HomePage> {
                       minWidth: double.infinity,
                       height: 60,
                       onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => LoginPage()));
+                        Get.toNamed("/login");
                       },
                       shape: RoundedRectangleBorder(
                           side: BorderSide(color: Colors.black),
@@ -100,10 +73,7 @@ class _HomePageState extends State<HomePage> {
                       minWidth: double.infinity,
                       height: 60,
                       onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => SignupPage()));
+                        Get.toNamed("/registro");
                       },
                       color: Color(0xff08497F),
                       shape: RoundedRectangleBorder(
@@ -126,16 +96,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  //Boton de retroceso del celular - solo android
+//Boton de retroceso del celular - solo android
   Future<bool> _onBackPressed() async {
     final shouldPop = await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text("¿Estas seguro de querer salir de la aplicacion?"),
         actions: <Widget>[
-          TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text("No")),
+          TextButton(onPressed: () => Get.back(), child: Text("No")),
           TextButton(
               onPressed: () =>
                   SystemChannels.platform.invokeMethod('SystemNavigator.pop'),

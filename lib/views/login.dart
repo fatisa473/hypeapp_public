@@ -1,12 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:hypeapp/signup.dart';
-import 'package:hypeapp/organizer.dart';
-import 'package:hypeapp/supplier.dart';
-import 'package:hypeapp/various.dart';
+import 'package:hypeapp/views/constants.dart';
+import 'package:hypeapp/views/various.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -22,6 +21,16 @@ class _LoginPageState extends State<LoginPage> {
   //VALIDATION
   final formKey = new GlobalKey<FormState>();
 
+  final box = GetStorage();
+
+  @override
+  void initState() {
+    super.initState();
+    box.read("email") != null
+        ? emailController.text = box.read("email")
+        : emailController.text = "";
+  }
+
   //
   @override
   void dispose() {
@@ -31,22 +40,18 @@ class _LoginPageState extends State<LoginPage> {
 
   //LOGIN
   Future<void> login() async {
-    var response = await http.post(
-        Uri.parse("http://10.0.0.7/hypeapp/hypeapp_php/basic_controller.php"),
-        body: {
-          "tipo": "ingresar",
-          "email": emailController.text,
-          "pass": passController.text,
-        });
+    var response = await http.post(Uri.parse(SERVIDOR), body: {
+      "tipo": "ingresar",
+      "email": emailController.text,
+      "pass": passController.text,
+    });
 
     if (response.statusCode == 200) {
       var data = json.decode(response.body);
       print(data);
       if (data["resp"] == "success") {
-        SharedPreferences preferences = await SharedPreferences.getInstance();
-        preferences.setString("email", emailController.text);
-        preferences.setString("type", data["body"]);
         messageLogin(emailController.text);
+        box.write("email", emailController.text);
         setState(() {
           _loading = false;
         });
@@ -54,22 +59,20 @@ class _LoginPageState extends State<LoginPage> {
         limpiarControllers();
         switch (data["body"]) {
           case "Proveedor":
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => SupplierPage()));
+            Get.offNamed("/supplier");
             break;
           case "Organizador":
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => OrganizerPage()));
+            Get.offNamed("/organizer");
             break;
         }
       } else if (data["resp"] == "fail") {
         String _message = "";
         switch (data["body"]) {
           case "401":
-            _message = "Usuario o Contraseña incorrecta";
+            _message = "Email o Contraseña incorrecta, revisar por favor";
             break;
           case "402":
-            _message = "Perfil de usuario no encontrado";
+            _message = "Perfil no encotrado, volver a intentar";
             break;
           default:
             _message = "No se ha podido realizar la operacion";
@@ -82,15 +85,16 @@ class _LoginPageState extends State<LoginPage> {
       }
     } else {
       messageSimple("No se ha podido realizar la conexion");
-
-      Navigator.of(context).pop();
+      setState(() {
+        _loading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return _loading
-        ? LoadingFull()
+        ? WillPopScope(onWillPop: () async => false, child: LoadingFull())
         : Scaffold(
             resizeToAvoidBottomInset: false,
             backgroundColor: Colors.white,
@@ -100,7 +104,7 @@ class _LoginPageState extends State<LoginPage> {
               backgroundColor: Colors.white,
               leading: IconButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  Get.back();
                 },
                 icon: Icon(
                   Icons.arrow_back_ios,
@@ -225,10 +229,7 @@ class _LoginPageState extends State<LoginPage> {
                           MaterialButton(
                             onPressed: () {
                               limpiarControllers();
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => SignupPage()));
+                              Get.toNamed("/registro");
                             },
                             child: Text(
                               "Regístrate!",

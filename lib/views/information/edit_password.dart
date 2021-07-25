@@ -2,8 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:hypeapp/views/constants.dart';
 
-import 'package:hypeapp/various.dart';
+import 'package:hypeapp/views/various.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class EditingPasswordPage extends StatefulWidget {
@@ -32,7 +33,7 @@ class _EditingPasswordState extends State<EditingPasswordPage> {
   Future setPassword() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     var response = await http.post(
-      Uri.parse("http://10.0.0.7/hypeapp/hypeapp_php/basic_controller.php"),
+      Uri.parse(SERVIDOR),
       body: {
         "tipo": "editar password",
         "email": preferences.getString("email"),

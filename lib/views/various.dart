@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:hypeapp/models/model.dart';
 
 //controllers
 //Son los que se encargara de mandar la informacion que se escribe en los campos
@@ -16,6 +17,7 @@ TextEditingController perfilController = new TextEditingController();
 TextEditingController estatusController = new TextEditingController();
 TextEditingController confirmController = new TextEditingController();
 
+List<CatalogModel> catalogo = [];
 void limpiarControllers() {
   nameController.clear();
   paternoController.clear();

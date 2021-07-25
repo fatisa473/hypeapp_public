@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+const SERVIDOR = "https://hypeapp1.herokuapp.com/basic_controller.php";
+const IMGS = "https://hypeapp1.herokuapp.com/img/";
+
 const TextColor = Color(0xFF535353);
 const TextLightColor = Color(0xFFACACAC);
 
