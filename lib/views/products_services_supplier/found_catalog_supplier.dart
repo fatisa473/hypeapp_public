@@ -2,14 +2,19 @@ import 'dart:io';
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-import 'package:hypeapp/views/various.dart';
 import 'package:image_picker/image_picker.dart';
 
-class FoundCatalogoTile extends StatefulWidget {
-  final int number;
+import '../supplier.dart';
+import '../various.dart';
+import 'edit_catalog_supplier.dart';
 
-  const FoundCatalogoTile(this.number);
+class FoundCatalogoTile extends StatefulWidget {
+  List list;
+  int index;
+
+  FoundCatalogoTile({required this.list, required this.index});
 
   @override
   _FoundCatalogoTile createState() => _FoundCatalogoTile();
@@ -24,6 +29,59 @@ class _FoundCatalogoTile extends State<FoundCatalogoTile> {
 
   //SELECT   - - - - - - - - - - - -   Verificar consulta
   Map<String, String> nacionalidadesMap = {}, perfilesMap = {};
+
+  //deleteFunction
+  void deleteData() {
+    var url = Uri.parse(
+        "https://hypeapp1.herokuapp.com/eventsproducts_php/deletedataproduct.php");
+    http.post(url,
+        body: {'idProducto': widget.list[widget.index]['idProducto_Servicio']});
+  }
+
+  //functionConfirm
+  void Confirmar() {
+    AlertDialog alertDialog = new AlertDialog(
+      content: new Text(
+          "Seguro que desea eliminar '${widget.list[widget.index]['nombre']}'"),
+      actions: <Widget>[
+        new RaisedButton(
+          child: new Text(
+            "Eliminar!",
+            style: TextStyle(color: Colors.blue),
+          ),
+          color: Colors.white,
+          onPressed: () {
+            deleteData();
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => SupplierPage(
+                        //id: "1",
+                        )));
+          },
+        ),
+        new RaisedButton(
+          child: new Text(
+            "Cancelar.",
+            style: TextStyle(color: Colors.blue),
+          ),
+          color: Colors.white,
+          onPressed: () => Navigator.pop(context),
+        ),
+      ],
+    );
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alertDialog;
+      },
+    );
+  }
+
+  Map<String, String> tipo = {
+    "1": "Producto",
+    "2": "Servicio",
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -75,18 +133,29 @@ class _FoundCatalogoTile extends State<FoundCatalogoTile> {
                 children: <Widget>[
                   inputFile(
                       label: "Nombre",
-                      nameController: nameController,
-                      maxLength: "80"),
-                  dropdownCategoria(),
+                      nameController: productoNombre
+                        ..text = widget.list[widget.index]
+                            ['nombre'], //Confirmar nombre del campo
+                      maxLength: "40"),
+                  inputFile(
+                      label: "Categoria",
+                      nameController: productoCategoria
+                        ..text = widget.list[widget.index]
+                            ['idTipo'], //Confirmar nombre del campo
+                      maxLength: "40"),
                   inputFile(
                       label: "Precio",
-                      nameController:
-                          maternoController, //Confirmar nombre del campo
+                      nameController: productoPrecio
+                        ..text = widget.list[widget.index]
+                            ['precio'], //Confirmar nombre del campo
                       maxLength: "40"),
                   //Se agrega un TextField para poder
                   //tener la opcion multilinea
                   Text("Descripción:"),
                   TextField(
+                    readOnly: true,
+                    controller: productoDescripcion
+                      ..text = widget.list[widget.index]['descripcion'],
                     maxLength: 200,
                     keyboardType: TextInputType.multiline,
                     //Nombre de controlador pendiente
@@ -111,11 +180,84 @@ class _FoundCatalogoTile extends State<FoundCatalogoTile> {
             Padding(
               padding: EdgeInsets.only(bottom: 10),
             ),
-            buttonEdit(),
+            Column(
+              children: <Widget>[
+                Container(
+                  padding: EdgeInsets.only(top: 3, left: 3),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(50),
+                      border: Border(
+                        bottom: BorderSide(color: Colors.black),
+                        top: BorderSide(color: Colors.black),
+                        left: BorderSide(color: Colors.black),
+                        right: BorderSide(color: Colors.black),
+                      )),
+                  child: MaterialButton(
+                    minWidth: double.infinity,
+                    height: 60,
+                    onPressed: () {
+                      Navigator.of(context).push(new MaterialPageRoute(
+                          builder: (BuildContext context) =>
+                              EditarProductosServicesPage(
+                                list: widget.list,
+                                index: widget.index,
+                              )));
+                    },
+                    color: Color(0xffFF9400),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: Text(
+                      "Editar",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
             Padding(
               padding: EdgeInsets.only(bottom: 10),
             ),
-            buttonDelete(),
+            Column(
+              children: <Widget>[
+                Container(
+                  padding: EdgeInsets.only(top: 3, left: 3),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(50),
+                      border: Border(
+                        bottom: BorderSide(color: Colors.black),
+                        top: BorderSide(color: Colors.black),
+                        left: BorderSide(color: Colors.black),
+                        right: BorderSide(color: Colors.black),
+                      )),
+                  child: MaterialButton(
+                    minWidth: double.infinity,
+                    height: 60,
+                    onPressed: () {
+                      Confirmar();
+                    },
+                    color: Color(0xffFF1300),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: Text(
+                      "Eliminar",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            )
           ],
         ),
       ),
@@ -123,7 +265,7 @@ class _FoundCatalogoTile extends State<FoundCatalogoTile> {
   }
 
   Widget inputFile(
-      {label, obscureText = false, nameController, maxLength = "16"}) {
+      {label, obscureText = false, nameController, maxLength = "16", text}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -136,17 +278,9 @@ class _FoundCatalogoTile extends State<FoundCatalogoTile> {
           height: 5,
         ),
         TextFormField(
-          readOnly: _loading == false ? false : true,
+          readOnly: true,
           controller: nameController,
           obscureText: obscureText,
-          validator: (item) {
-            switch (label) {
-              case "Nombre":
-              case "Precio":
-              case "Descripción":
-              case "Agregar imagen":
-            }
-          },
           decoration: InputDecoration(
               contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 10),
               enabledBorder: OutlineInputBorder(
@@ -176,10 +310,11 @@ class _FoundCatalogoTile extends State<FoundCatalogoTile> {
           mode: Mode.MENU,
           enabled: _loading == false ? true : false,
           showSelectedItem: true,
-          items: nacionalidadesMap.values.toList(),
+          items: tipo.values.toList(),
           hint: "Seleccionar Categoria",
+          selectedItem: widget.list[widget.index]['idTipo'],
           onChanged: (data) {
-            nacionalidadController.text = data.toString();
+            productoCategoria.text = data.toString();
           },
           validator: (item) {
             return validarDropDown(item);
@@ -196,76 +331,4 @@ class _FoundCatalogoTile extends State<FoundCatalogoTile> {
       ],
     );
   }
-}
-
-Widget buttonEdit() {
-  return Column(
-    children: <Widget>[
-      Container(
-        padding: EdgeInsets.only(top: 3, left: 3),
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(50),
-            border: Border(
-              bottom: BorderSide(color: Colors.black),
-              top: BorderSide(color: Colors.black),
-              left: BorderSide(color: Colors.black),
-              right: BorderSide(color: Colors.black),
-            )),
-        child: MaterialButton(
-          minWidth: double.infinity,
-          height: 60,
-          onPressed: () {},
-          color: Color(0xffFF9400),
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(50),
-          ),
-          child: Text(
-            "Editar",
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 18,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ),
-    ],
-  );
-}
-
-Widget buttonDelete() {
-  return Column(
-    children: <Widget>[
-      Container(
-        padding: EdgeInsets.only(top: 3, left: 3),
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(50),
-            border: Border(
-              bottom: BorderSide(color: Colors.black),
-              top: BorderSide(color: Colors.black),
-              left: BorderSide(color: Colors.black),
-              right: BorderSide(color: Colors.black),
-            )),
-        child: MaterialButton(
-          minWidth: double.infinity,
-          height: 60,
-          onPressed: () {},
-          color: Color(0xffFF1300),
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(50),
-          ),
-          child: Text(
-            "Eliminar",
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 18,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ),
-    ],
-  );
 }

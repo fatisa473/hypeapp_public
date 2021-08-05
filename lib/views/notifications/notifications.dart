@@ -1,18 +1,157 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:hypeapp/models/provider.dart';
+import 'package:hypeapp/views/constants.dart';
 
-List<String> notificacionesMessage = ["Notificacion Sencilla"];
-List<String> notificacionesQuestion = ["Notificacion Pregunta"];
+/*
+Proveedor - Notificaciones
+  Recordatorios de los eventos que tiene 
+  De las peticiones de los eventos. //Es el unico que se guardara en la base de datos 
 
-class NotificationsPage extends StatelessWidget {
+Organizador - Notificaciones
+  Recordatorios de los eventos que tiene 
+  Respuesta de las peticiones. 
+*/
+
+List<String> notificacionesMessage = [
+  "Notificacion Sencilla",
+  "Notificacion Sencilla 2",
+  "Notificacion Sencilla 3",
+  "Notificacion Sencilla 4",
+  "Notificacion Sencilla 5",
+  "Notificacion Sencilla 6"
+];
+
+List<bool> tipoNotificacion = [true, false, true, false, true, true];
+
+PushNotificationService push = new PushNotificationService();
+
+//Las notificaciones para el organizador, seran hacia sus eventos
+//Las notificaciones para el proveedor, seran hacia los eventos que participara y le llegaran
+
+//Seran una pagina de notificaciones diferente para cada perfil
+
+class NotificationsPage extends StatefulWidget {
   const NotificationsPage({Key? key}) : super(key: key);
 
   @override
+  _NotificationsPageState createState() => _NotificationsPageState();
+}
+
+class _NotificationsPageState extends State<NotificationsPage> {
+  @override
+  void initState() {
+    push.pruebaEnvio();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text("Pagina de notificaciones"),
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 0.0,
+        automaticallyImplyLeading: false,
+        centerTitle: true,
+        title: new Text(
+          ("Notificaciones"),
+          style: TextStyle(
+            fontSize: fontSize_AppBar,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: bgColor_AppBar,
+      ),
+      resizeToAvoidBottomInset: true,
+      backgroundColor: Colors.white,
+      body: Column(
+        children: <Widget>[
+          subEncabezado(),
+          Flexible(
+            child: _listMessage(),
+          ),
+        ],
+      ),
     );
   }
+
+  //
+  Widget subEncabezado() {
+    return Container(
+      width: double.infinity,
+      height: 56, //85,
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(),
+        child: Row(
+          children: [
+            Padding(
+              padding: EdgeInsets.only(
+                top: 2,
+                left: 10,
+                right: 10,
+              ),
+            ),
+            Expanded(
+              child: Container(
+                height: double.infinity,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.only(
+                        right: 20,
+                      ),
+                      child: Align(
+                        alignment: Alignment.topRight,
+                        child: Text(
+                          "Resultados",
+                          style: TextStyle(
+                            color: const Color(0xffc4c2bf),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  //
+}
+
+Widget _listMessage() => ListView.builder(
+      shrinkWrap: true,
+      itemCount: notificacionesMessage.length,
+      itemBuilder: (BuildContext context, int index) {
+        return tipoNotificacion[index] == true
+            ? Message(index)
+            : Question(index);
+      },
+    );
+
+Widget Message(index) {
+  return Dismissible(
+    key: ObjectKey(notificacionesMessage[index]),
+    child: CardNotificacionMessage(notificacionesMessage[index]),
+    onDismissed: (direction) {
+      /*setState(() {
+              notificacionesMessage.removeAt(index);
+            });*/
+    },
+  );
+}
+
+Widget Question(index) {
+  return Column(
+    children: <Widget>[CardNotificacionQuestion(notificacionesMessage[index])],
+  );
 }
 
 class CardNotificacionMessage extends StatelessWidget {
@@ -125,58 +264,5 @@ class CardNotificacionQuestion extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class ListNotificacionesMessage extends StatefulWidget {
-  const ListNotificacionesMessage({Key? key}) : super(key: key);
-
-  @override
-  _ListNotificacionesMessageState createState() =>
-      _ListNotificacionesMessageState();
-}
-
-class _ListNotificacionesMessageState extends State<ListNotificacionesMessage> {
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-        shrinkWrap: true,
-        itemCount: notificacionesMessage.length,
-        itemBuilder: (BuildContext context, int index) {
-          return Dismissible(
-            key: ObjectKey(notificacionesMessage[index]),
-            child: CardNotificacionMessage(notificacionesMessage[index]),
-            onDismissed: (direction) {
-              setState(() {
-                notificacionesMessage.removeAt(index);
-              });
-            },
-          );
-        });
-  }
-}
-
-class ListNotificacionesQuestion extends StatefulWidget {
-  const ListNotificacionesQuestion({Key? key}) : super(key: key);
-
-  @override
-  _ListNotificacionesQuestionState createState() =>
-      _ListNotificacionesQuestionState();
-}
-
-class _ListNotificacionesQuestionState
-    extends State<ListNotificacionesQuestion> {
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-        shrinkWrap: true,
-        itemCount: notificacionesQuestion.length,
-        itemBuilder: (BuildContext context, int index) {
-          return Column(
-            children: <Widget>[
-              CardNotificacionQuestion(notificacionesQuestion[index])
-            ],
-          );
-        });
   }
 }

@@ -41,6 +41,8 @@ class _SignupPageState extends State<SignupPage> {
       body: {"tipo": "nacionalidades"},
     );
 
+    if (!mounted) return;
+
     if (response.statusCode == 200) {
       var data = json.decode(response.body);
       if (data["resp"] == "Success") {
@@ -63,6 +65,7 @@ class _SignupPageState extends State<SignupPage> {
       body: {"tipo": "perfiles"},
     );
 
+    if (!mounted) return;
     if (response.statusCode == 200) {
       var data = json.decode(response.body);
       if (data["resp"] == "Success") {
@@ -104,6 +107,8 @@ class _SignupPageState extends State<SignupPage> {
       "nacionalidad": nacionalidadController.text,
       "perfil": perfilController.text
     });
+    if (!mounted) return;
+
     if (response.statusCode == 200) {
       var data = json.decode(response.body);
       print(data);

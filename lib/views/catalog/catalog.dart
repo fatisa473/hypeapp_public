@@ -47,6 +47,8 @@ class _ProductsServicesCatalogState extends State<ProductsServicesCatalogPage> {
         "orden": nombreOrden,
         "buscar": buscar.text,
       });
+
+      if (!mounted) return;
       catalogo.clear();
       _totalPS = 0;
 
@@ -75,9 +77,6 @@ class _ProductsServicesCatalogState extends State<ProductsServicesCatalogPage> {
     } catch (e) {
       print(e);
       messageSimple("Error: " + e.toString());
-      setState(() {
-        isLoading = false;
-      });
     }
   }
 

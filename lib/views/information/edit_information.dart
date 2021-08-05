@@ -8,7 +8,6 @@ import 'package:hypeapp/views/constants.dart';
 import 'package:hypeapp/views/information/edit_password.dart';
 import 'package:hypeapp/views/various.dart';
 
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:dropdown_search/dropdown_search.dart';
 
@@ -55,6 +54,8 @@ class _EditInfoPageState extends State<EditInfoPage> {
       body: {"tipo": "nacionalidades"},
     );
 
+    if (!mounted) return;
+
     if (response.statusCode == 200) {
       var data = json.decode(response.body);
       if (data["resp"] == "Success") {
@@ -78,9 +79,13 @@ class _EditInfoPageState extends State<EditInfoPage> {
       Uri.parse(SERVIDOR),
       body: {"tipo": "visualizar informacion", "email": box.read("email")},
     );
+
+    if (!mounted) return;
+
     if (response.statusCode == 200) {
       var data = json.decode(response.body);
       //
+
       setState(() {
         nameController.text = data['nombres'];
         paternoController.text = data['ap_pat'];

@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:http/http.dart' as http;
+import 'package:hypeapp/views/constants.dart';
 
 //DIRECTORIO
 import 'package:hypeapp/views/products_services_supplier/found_catalog_supplier.dart';
@@ -13,132 +17,159 @@ class ProductsServicesSupplierPage extends StatefulWidget {
 
 class _ProductsServicesSupplierPage
     extends State<ProductsServicesSupplierPage> {
-  int _totalPS = 3; //Contador del total de productos y servicios
-  //int _totalPS = products.length;
-  int _filtercount = 0; //Contador del filtro
+  Future<List> getDataProduct() async {
+    final response = await http
+        .post(Uri.parse("https://hypeapp1.herokuapp.com/getdataproduct.php"));
+
+    return json.decode(response.body);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        body: Stack(
+      children: [
+        FutureBuilder<List>(
+          future: getDataProduct(),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) print(snapshot.error);
+            return snapshot.hasData
+                ? new ItemList(
+                    list: snapshot.data!,
+                  )
+                : new Center(
+                    child: new CircularProgressIndicator(),
+                  );
+          },
+        ),
+        Positioned(
+          bottom: 0.0,
+          left: 0.0,
+          right: 0.0,
+          child: Container(
+            padding: EdgeInsets.only(top: 3, left: 3),
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(50),
+                border: Border(
+                  bottom: BorderSide(color: Colors.black),
+                  top: BorderSide(color: Colors.black),
+                  left: BorderSide(color: Colors.black),
+                  right: BorderSide(color: Colors.black),
+                )),
+            child: MaterialButton(
+              minWidth: 300.0,
+              height: 60,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => AgregarProductosServicesPage()),
+                );
+              },
+              color: Color(0xff08497F),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(50),
+              ),
+              child: Text(
+                "Agregar",
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        )
+      ],
+    ));
+  }
+}
+
+class ItemList extends StatelessWidget {
+  final List list;
+  ItemList({required this.list});
 
   List<int> selectedIndexList = <int>[];
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Filtro(_filtercount),
-        Flexible(
-          child: _buildGrid(),
-        ),
-        Container(
-          padding: EdgeInsets.only(top: 3, left: 3),
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(50),
-              border: Border(
-                bottom: BorderSide(color: Colors.black),
-                top: BorderSide(color: Colors.black),
-                left: BorderSide(color: Colors.black),
-                right: BorderSide(color: Colors.black),
-              )),
-          child: MaterialButton(
-            minWidth: 300.0,
-            height: 60,
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => AgregarProductosServicesPage()),
-              );
-            },
-            color: Color(0xff08497F),
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(50),
-            ),
-            child: Text(
-              "Agregar",
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 18,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildGrid() => GridView.builder(
-        itemCount: _totalPS,
-        padding: const EdgeInsets.all(8),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 1.0,
-          mainAxisSpacing: 1.0,
-        ),
-        itemBuilder: (BuildContext context, int index) {
-          return Container(
-            //color: Colors.red,
-            width: 100,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                GestureDetector(
-                  onTap: () {
-                    if (!selectedIndexList.contains(index) ||
-                        selectedIndexList.contains(index)) {
-                      selectedIndexList.add(index);
-                      print("Seleccionado $index");
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => FoundCatalogoTile(index),
-                        ),
-                      );
-                    }
-                    /*else {
+    return new GridView.builder(
+      itemCount: list == null ? 0 : list.length,
+      padding: const EdgeInsets.all(8),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 1.0,
+        mainAxisSpacing: 1.0,
+      ),
+      itemBuilder: (context, i) {
+        return Container(
+          //color: Colors.red,
+          width: 100,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              GestureDetector(
+                onTap: () {
+                  if (!selectedIndexList.contains(i) ||
+                      selectedIndexList.contains(i)) {
+                    selectedIndexList.add(i);
+                    print("Seleccionado $i");
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            FoundCatalogoTile(list: list, index: i),
+                      ),
+                    );
+                  }
+                  /*else {
                       selectedIndexList.remove(index);
                       print("No Seleccionado $index");
                     }*/
-                  },
-                  child: Container(
-                    width: 170,
-                    height: 170,
-                    //color: Colors.blue,
-                    child: Card(
-                      elevation: 5.0,
-                      margin: EdgeInsets.all(6),
-                      child: Column(
-                        children: [
-                          new Center(
-                            child: Image(
-                              image: AssetImage("assets/background.png"),
-                              width: 120.0,
-                              height: 84.0,
+                },
+                child: Container(
+                  width: 170,
+                  height: 180,
+                  //color: Colors.blue,
+                  child: Card(
+                    elevation: 5.0,
+                    margin: EdgeInsets.all(6),
+                    child: Column(
+                      children: [
+                        new Center(
+                          child: Image.network(
+                            IMGS + list[i]["imagen"],
+                            width: 100.0,
+                            height: 84.0,
+                          ),
+                        ),
+                        new ListTile(
+                          title: new Text(
+                            list[i]["nombre"],
+                            style: TextStyle(
+                              fontSize: 14,
                             ),
                           ),
-                          new ListTile(
-                            title: new Text(
-                              "Producto: producto",
-                              style: TextStyle(
-                                fontSize: 14,
-                              ),
-                            ),
-                            subtitle: new Text(
-                              'Descripcion: es un producto',
-                              style: TextStyle(
-                                fontSize: 12,
-                              ),
+                          subtitle: new Text(
+                            list[i]["descripcion"],
+                            style: TextStyle(
+                              fontSize: 12,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ],
-            ),
-            //
-          );
-        },
-      );
+              ),
+            ],
+          ),
+          //
+        );
+      },
+    );
+  }
 }
 
 class Filtro extends StatefulWidget {

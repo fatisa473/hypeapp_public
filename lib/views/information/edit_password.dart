@@ -1,11 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:hypeapp/views/constants.dart';
 
 import 'package:hypeapp/views/various.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class EditingPasswordPage extends StatefulWidget {
   const EditingPasswordPage({Key? key}) : super(key: key);
@@ -15,31 +16,24 @@ class EditingPasswordPage extends StatefulWidget {
 }
 
 class _EditingPasswordState extends State<EditingPasswordPage> {
-  @override
-  void dispose() {
-    limpiarControllers();
-    super.dispose();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
   bool _loadingSimple = false;
 
   final formKey = new GlobalKey<FormState>();
+  final box = GetStorage();
+
+  TextEditingController newPassController = new TextEditingController();
+  TextEditingController confirmNewPassController = new TextEditingController();
 
   Future setPassword() async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
     var response = await http.post(
       Uri.parse(SERVIDOR),
       body: {
         "tipo": "editar password",
-        "email": preferences.getString("email"),
-        "pass_new": passController.text
+        "email": box.read("email"),
+        "pass_new": newPassController.text
       },
     );
+    if (!mounted) return;
 
     if (response.statusCode == 200) {
       var data = json.decode(response.body);
@@ -71,7 +65,7 @@ class _EditingPasswordState extends State<EditingPasswordPage> {
         backgroundColor: Colors.white,
         leading: IconButton(
           onPressed: () {
-            Navigator.pop(context);
+            Get.back();
           },
           icon: Icon(
             Icons.arrow_back_ios,
@@ -113,11 +107,11 @@ class _EditingPasswordState extends State<EditingPasswordPage> {
                     inputFile(
                         label: "Nueva Contraseña",
                         obscureText: true,
-                        nameController: passController),
+                        nameController: newPassController),
                     inputFile(
                         label: "Confirmar Nueva Contraseña",
                         obscureText: true,
-                        nameController: confirmController),
+                        nameController: confirmNewPassController),
                   ],
                 ),
               ),
@@ -240,7 +234,7 @@ class _EditingPasswordState extends State<EditingPasswordPage> {
               case "Nueva Contraseña":
                 return validarPassword(item);
               case "Confirmar Nueva Contraseña":
-                return validarConfirmPassword(item, passController);
+                return validarConfirmPassword(item, newPassController);
             }
           },
           obscureText: obscureText,
@@ -262,7 +256,7 @@ class _EditingPasswordState extends State<EditingPasswordPage> {
   void limpiarCampos() {
     FocusScope.of(context).unfocus();
     formKey.currentState!.reset();
-    passController.clear();
-    confirmController.clear();
+    newPassController.clear();
+    confirmNewPassController.clear();
   }
 }

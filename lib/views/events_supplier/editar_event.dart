@@ -1,56 +1,80 @@
 import 'dart:io';
-
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
 
 //DIRECTORIO
 import '../supplier.dart';
 import '../various.dart';
 
-class AgregarProductosServicesPage extends StatefulWidget {
-  _AgregarProductosServicesPage createState() =>
-      _AgregarProductosServicesPage();
+class EditarEventosPage extends StatefulWidget {
+  List list;
+  int index;
+
+  EditarEventosPage({required this.list, required this.index});
+  _EditarEventosPage createState() => _EditarEventosPage();
 }
 
-class _AgregarProductosServicesPage
-    extends State<AgregarProductosServicesPage> {
+class _EditarEventosPage extends State<EditarEventosPage> {
+  //controladores
+  TextEditingController controlNombreEvento = new TextEditingController();
+
   var imagePath;
   //LOADING
   bool _loading = false;
   //VALIDACION
   final _formKey = new GlobalKey<FormState>();
 
-  void addData() {
-    var url = Uri.parse(
-        "https://hypeapp1.herokuapp.com/eventsproducts_php/addproduct.php");
-    http.post(url, body: {
-      "tipo": productoCategoria.text,
-      "nombre": productoNombre.text,
-      "descripcion": productoDescripcion.text,
-      "imagen": productoImagen.text,
-      "precio": productoPrecio.text,
-    });
-    limpiarControllers();
-  }
-
   //SELECT   - - - - - - - - - - - -   Verificar consulta
-  Map<String, String> nacionalidadesMap = {}, perfilesMap = {};
-  Map<int, String> categoria = {
-    1: "Producto",
-    2: "Servicio",
-  };
+  Map<String, String> tipoEventoMap = {}, perfilesMap = {};
+
+  //editaDataFunction
+  void editData() {
+    var url = Uri.parse(
+        "https://hypeapp1.herokuapp.com/eventsproducts_php/editevent.php");
+    http.post(url, body: {
+      "idEvento": widget.list[widget.index]['idEvento'],
+      "nombre": eventoNombre.text,
+      "Tipo_Evento": eventoCategoria.text,
+      "descripcion": eventoDescripcion.text,
+      "fecha": eventoFecha.text,
+      "hor_inicial": eventoHoraInicio.text,
+      "hor_final": eventoHoraFinal.text,
+      "locacion": eventoLocacion.text,
+      "locacion_resp": eventoLocacionRespaldo.text,
+      "idBanquete": eventoTipoBanquetes.text,
+      "idProducto_Servicio": eventoProductoServicio.text,
+      "idTipo": eventoTipoProductoServicio.text,
+      "idTipos": eventoProductoOServicio.text,
+      "desc_extra": eventoInformacionExtra.text,
+    });
+  }
 
   @override
   void initState() {
-    limpiarControllers();
+    eventoNombre..text = widget.list[widget.index]['nombre'];
+    eventoCategoria..text = widget.list[widget.index]['idTipo_Evento'];
+    eventoFecha..text = widget.list[widget.index]['fecha'];
+    eventoHoraInicio..text = widget.list[widget.index]['hor_inicial'];
+    eventoHoraFinal..text = widget.list[widget.index]['hor_final'];
+    eventoLocacion..text = widget.list[widget.index]['locacion'];
+    eventoLocacionRespaldo..text = widget.list[widget.index]['locacion_resp'];
+    eventoDescripcion..text = widget.list[widget.index]['descripcion'];
+    eventoBanquetes..text = "3";
+    eventoTipoBanquetes..text = "Banquetes dos soles";
+    eventoProductoServicio..text = "producto1";
+    eventoTipoProductoServicio..text = "1";
+    eventoProductoOServicio..text = "producto";
+    eventoInformacionExtra
+      ..text =
+          "Entrar al primer camino de terraceria para llegar a la locacion";
     super.initState();
   }
 
   @override
   void dispose() {
-    limpiarControllers();
+    //limpiarControllers();
     super.dispose();
   }
 
@@ -84,7 +108,7 @@ class _AgregarProductosServicesPage
               Column(
                 children: <Widget>[
                   Text(
-                    "Agregar Producto",
+                    "Editar Evento",
                     style: TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
@@ -105,43 +129,80 @@ class _AgregarProductosServicesPage
                   children: <Widget>[
                     inputFile(
                         label: "Nombre",
+                        hint: "Escribe un nombre de evento",
                         nameController:
-                            productoNombre, //Confirmar nombre del campo
+                            eventoNombre, //Confirmar nombre del campo
+                        maxLength: "40"),
+                    dropdownCategoria(),
+                    inputFile(
+                        label: "Fecha",
+                        hint: "AAAA-MM-DD",
+                        nameController:
+                            eventoFecha, //Confirmar nombre del campo
+                        maxLength: "40"),
+                    inputFile(
+                        label: "Hora inicial",
+                        hint: "Ingresa una hora inicial",
+                        nameController:
+                            eventoHoraInicio, //Confirmar nombre del campo
+                        maxLength: "40"),
+                    inputFile(
+                        label: "Hora Final",
+                        hint: "ingrese una hora final",
+                        nameController:
+                            eventoHoraFinal, //Confirmar nombre del campo
+                        maxLength: "40"),
+                    inputFile(
+                        label: "Locacion",
+                        hint: "ingrese una ubicacion",
+                        nameController:
+                            eventoLocacion, //Confirmar nombre del campo
+                        maxLength: "40"),
+                    inputFile(
+                        label: "Locacion de respaldo",
+                        hint: "Ingrese una ubicacion de respaldo",
+                        nameController:
+                            eventoLocacionRespaldo, //Confirmar nombre del campo
+                        maxLength: "40"),
+                    inputFile(
+                        label: "Descripcion",
+                        hint: "Ingrese una descripcion",
+                        nameController:
+                            eventoDescripcion, //Confirmar nombre del campo
+                        maxLength: "40"),
+                    inputFile(
+                        label: "Numero de banquetes",
+                        hint: "Ingrese un numero de banquetes",
+                        nameController:
+                            eventoBanquetes, //Confirmar nombre del campo
+                        maxLength: "40"),
+                    inputFile(
+                        label: "Nombre del banquete",
+                        nameController:
+                            eventoTipoBanquetes, //Confirmar nombre del campo
+                        maxLength: "40"),
+                    inputFile(
+                        label: "Productos y servicios",
+                        hint: "Ingrese un numero de productos y servicios",
+                        nameController:
+                            eventoProductoServicio, //Confirmar nombre del campo
                         maxLength: "40"),
                     inputFile(
                         label: "Tipo",
                         nameController:
-                            productoCategoria, //Confirmar nombre del campo
+                            eventoTipoProductoServicio, //Confirmar nombre del campo
                         maxLength: "40"),
                     inputFile(
-                        label: "Precio",
+                        label: "Producto o servicio",
                         nameController:
-                            productoPrecio, //Confirmar nombre del campo
+                            eventoProductoOServicio, //Confirmar nombre del campo
                         maxLength: "40"),
-                    //Se agrega un TextField para poder
-                    //tener la opcion multilinea
-                    Text("Descripción:"),
-                    TextField(
-                      readOnly: false,
-                      controller: productoDescripcion,
-                      maxLength: 200,
-                      keyboardType: TextInputType.multiline,
-                      //Nombre de controlador pendiente
-                    ),
-                    Text("Agregar imagen"),
-                    (imagePath == null)
-                        ? Container()
-                        : Image.file(File(imagePath)),
-                    ElevatedButton(
-                      onPressed: () async {
-                        final ImagePicker _picker = ImagePicker();
-                        PickedFile? _pickedFile =
-                            await _picker.getImage(source: ImageSource.gallery);
-                        imagePath = _pickedFile!.path;
-                        setState(() {});
-                      },
-                      child: Text("Examinar..."),
-                    ),
+                    inputFile(
+                        label: "Informacion extra",
+                        hint: "Informacion que podria ser de utilidad conocer",
+                        nameController:
+                            eventoInformacionExtra, //Confirmar nombre del campo
+                        maxLength: "255"),
                   ],
                 ),
               ),
@@ -180,7 +241,7 @@ class _AgregarProductosServicesPage
             minWidth: double.infinity,
             height: 60,
             onPressed: () {
-              addData();
+              editData();
               Navigator.push(context,
                   MaterialPageRoute(builder: (context) => SupplierPage()));
             },
@@ -190,7 +251,7 @@ class _AgregarProductosServicesPage
               borderRadius: BorderRadius.circular(50),
             ),
             child: Text(
-              "Agregar",
+              "Guardar",
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 18,
@@ -217,10 +278,10 @@ class _AgregarProductosServicesPage
           mode: Mode.MENU,
           enabled: _loading == false ? true : false,
           showSelectedItem: true,
-          items: categoria.values.toList(),
+          items: tipoEventoMap.values.toList(),
           hint: "Seleccionar Categoria",
           onChanged: (data) {
-            nacionalidadController.text = data.toString();
+            eventoCategoria.text = data.toString();
           },
           validator: (item) {
             return validarDropDown(item);
@@ -238,7 +299,7 @@ class _AgregarProductosServicesPage
     );
   }
 
-  Widget dropdownPerfil() {
+  Widget dropdownPerfil({nameController}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -274,7 +335,7 @@ class _AgregarProductosServicesPage
   }
 
   Widget inputFile(
-      {label, obscureText = false, nameController, maxLength = "16"}) {
+      {label, obscureText = false, nameController, maxLength = "16", hint}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -291,14 +352,46 @@ class _AgregarProductosServicesPage
           controller: nameController,
           obscureText: obscureText,
           validator: (item) {
-            switch (label) {
-              case "Nombre":
-              case "Precio":
-              case "Descripción":
-              case "Agregar imagen":
-            }
+            if (item!.isEmpty) return hint;
           },
           decoration: InputDecoration(
+              hintText: hint,
+              contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.grey[400]!),
+              ),
+              border: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey[400]!))),
+        ),
+        SizedBox(
+          height: 10,
+        )
+      ],
+    );
+  }
+
+  Widget inputDate(
+      {label, obscureText = false, nameController, maxLength = "16", hint}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          label,
+          style: TextStyle(
+              fontSize: 15, fontWeight: FontWeight.w400, color: Colors.black87),
+        ),
+        SizedBox(
+          height: 5,
+        ),
+        TextFormField(
+          readOnly: _loading == false ? false : true,
+          controller: nameController,
+          obscureText: obscureText,
+          validator: (item) {
+            if (item!.isEmpty) return hint;
+          },
+          decoration: InputDecoration(
+              hintText: label,
               contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 10),
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: Colors.grey[400]!),

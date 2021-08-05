@@ -16,8 +16,28 @@ TextEditingController nacionalidadController = new TextEditingController();
 TextEditingController perfilController = new TextEditingController();
 TextEditingController estatusController = new TextEditingController();
 TextEditingController confirmController = new TextEditingController();
+//eventos
+TextEditingController eventoNombre = new TextEditingController();
+TextEditingController eventoCategoria = new TextEditingController();
+TextEditingController eventoHoraInicio = new TextEditingController();
+TextEditingController eventoHoraFinal = new TextEditingController();
+TextEditingController eventoFecha = new TextEditingController();
+TextEditingController eventoLocacion = new TextEditingController();
+TextEditingController eventoLocacionRespaldo = new TextEditingController();
+TextEditingController eventoDescripcion = new TextEditingController();
+TextEditingController eventoBanquetes = new TextEditingController();
+TextEditingController eventoTipoBanquetes = new TextEditingController();
+TextEditingController eventoProductoServicio = new TextEditingController();
+TextEditingController eventoTipoProductoServicio = new TextEditingController();
+TextEditingController eventoProductoOServicio = new TextEditingController();
+TextEditingController eventoInformacionExtra = new TextEditingController();
+//productos_servicios
+TextEditingController productoNombre = new TextEditingController();
+TextEditingController productoCategoria = new TextEditingController();
+TextEditingController productoPrecio = new TextEditingController();
+TextEditingController productoDescripcion = new TextEditingController();
+TextEditingController productoImagen = new TextEditingController();
 
-List<CatalogModel> catalogo = [];
 void limpiarControllers() {
   nameController.clear();
   paternoController.clear();
@@ -30,7 +50,30 @@ void limpiarControllers() {
   passController.clear();
   estatusController.clear();
   confirmController.clear();
+  //eventos
+  eventoBanquetes.clear();
+  eventoCategoria.clear();
+  eventoDescripcion.clear();
+  eventoFecha.clear();
+  eventoHoraFinal.clear();
+  eventoHoraInicio.clear();
+  eventoInformacionExtra.clear();
+  eventoLocacion.clear();
+  eventoLocacionRespaldo.clear();
+  eventoNombre.clear();
+  eventoProductoOServicio.clear();
+  eventoProductoServicio.clear();
+  eventoTipoBanquetes.clear();
+  eventoTipoProductoServicio.clear();
+  //producto
+  productoCategoria.clear();
+  productoDescripcion.clear();
+  productoImagen.clear();
+  productoNombre.clear();
+  productoPrecio.clear();
 }
+
+List<CatalogModel> catalogo = [];
 
 //messages
 void messageLogin(email) {

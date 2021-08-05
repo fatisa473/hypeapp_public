@@ -45,6 +45,7 @@ class _LoginPageState extends State<LoginPage> {
       "email": emailController.text,
       "pass": passController.text,
     });
+    if (!mounted) return;
 
     if (response.statusCode == 200) {
       var data = json.decode(response.body);

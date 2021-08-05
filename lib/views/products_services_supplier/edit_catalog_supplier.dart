@@ -9,49 +9,51 @@ import 'package:http/http.dart' as http;
 import '../supplier.dart';
 import '../various.dart';
 
-class AgregarProductosServicesPage extends StatefulWidget {
-  _AgregarProductosServicesPage createState() =>
-      _AgregarProductosServicesPage();
+class EditarProductosServicesPage extends StatefulWidget {
+  List list;
+  int index;
+
+  EditarProductosServicesPage({required this.list, required this.index});
+  _EditarProductosServicesPage createState() => _EditarProductosServicesPage();
 }
 
-class _AgregarProductosServicesPage
-    extends State<AgregarProductosServicesPage> {
+class _EditarProductosServicesPage extends State<EditarProductosServicesPage> {
   var imagePath;
   //LOADING
   bool _loading = false;
   //VALIDACION
   final _formKey = new GlobalKey<FormState>();
 
-  void addData() {
+  //SELECT   - - - - - - - - - - - -   Verificar consulta
+  Map<String, String> nacionalidadesMap = {},
+      perfilesMap = {},
+      tipo = {
+        "1": "Producto",
+        "2": "Servicio",
+      };
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    //limpiarControllers();
+    super.dispose();
+  }
+
+  void editData() {
     var url = Uri.parse(
-        "https://hypeapp1.herokuapp.com/eventsproducts_php/addproduct.php");
+        "https://hypeapp1.herokuapp.com/eventsproducts_php/editproduct.php");
     http.post(url, body: {
+      "id": widget.list[widget.index]['idProducto_Servicio'],
       "tipo": productoCategoria.text,
       "nombre": productoNombre.text,
       "descripcion": productoDescripcion.text,
       "imagen": productoImagen.text,
       "precio": productoPrecio.text,
     });
-    limpiarControllers();
-  }
-
-  //SELECT   - - - - - - - - - - - -   Verificar consulta
-  Map<String, String> nacionalidadesMap = {}, perfilesMap = {};
-  Map<int, String> categoria = {
-    1: "Producto",
-    2: "Servicio",
-  };
-
-  @override
-  void initState() {
-    limpiarControllers();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    limpiarControllers();
-    super.dispose();
   }
 
   @override
@@ -84,7 +86,7 @@ class _AgregarProductosServicesPage
               Column(
                 children: <Widget>[
                   Text(
-                    "Agregar Producto",
+                    "Editar Producto",
                     style: TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
@@ -105,25 +107,24 @@ class _AgregarProductosServicesPage
                   children: <Widget>[
                     inputFile(
                         label: "Nombre",
-                        nameController:
-                            productoNombre, //Confirmar nombre del campo
+                        nameController: productoNombre
+                          ..text = widget.list[widget.index]
+                              ['nombre'], //Confirmar nombre del campo
                         maxLength: "40"),
-                    inputFile(
-                        label: "Tipo",
-                        nameController:
-                            productoCategoria, //Confirmar nombre del campo
-                        maxLength: "40"),
+                    dropdownCategoria(),
                     inputFile(
                         label: "Precio",
-                        nameController:
-                            productoPrecio, //Confirmar nombre del campo
+                        nameController: productoPrecio
+                          ..text = widget.list[widget.index]
+                              ['precio'], //Confirmar nombre del campo
                         maxLength: "40"),
                     //Se agrega un TextField para poder
                     //tener la opcion multilinea
                     Text("Descripción:"),
                     TextField(
-                      readOnly: false,
-                      controller: productoDescripcion,
+                      readOnly: true,
+                      controller: productoDescripcion
+                        ..text = widget.list[widget.index]['descripcion'],
                       maxLength: 200,
                       keyboardType: TextInputType.multiline,
                       //Nombre de controlador pendiente
@@ -180,7 +181,7 @@ class _AgregarProductosServicesPage
             minWidth: double.infinity,
             height: 60,
             onPressed: () {
-              addData();
+              editData();
               Navigator.push(context,
                   MaterialPageRoute(builder: (context) => SupplierPage()));
             },
@@ -217,10 +218,11 @@ class _AgregarProductosServicesPage
           mode: Mode.MENU,
           enabled: _loading == false ? true : false,
           showSelectedItem: true,
-          items: categoria.values.toList(),
+          items: tipo.values.toList(),
           hint: "Seleccionar Categoria",
+          selectedItem: widget.list[widget.index]['idTipo'],
           onChanged: (data) {
-            nacionalidadController.text = data.toString();
+            productoCategoria.text = data.toString();
           },
           validator: (item) {
             return validarDropDown(item);

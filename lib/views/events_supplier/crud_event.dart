@@ -1,46 +1,58 @@
 import 'dart:io';
-
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
 
 //DIRECTORIO
 import '../supplier.dart';
 import '../various.dart';
 
-class AgregarProductosServicesPage extends StatefulWidget {
-  _AgregarProductosServicesPage createState() =>
-      _AgregarProductosServicesPage();
+class AgregarEventosPage extends StatefulWidget {
+  _AgregarEventosPage createState() => _AgregarEventosPage();
 }
 
-class _AgregarProductosServicesPage
-    extends State<AgregarProductosServicesPage> {
+class _AgregarEventosPage extends State<AgregarEventosPage> {
+  //controladores
+  TextEditingController controlNombreEvento = new TextEditingController();
+
   var imagePath;
   //LOADING
   bool _loading = false;
   //VALIDACION
   final _formKey = new GlobalKey<FormState>();
 
+  //addFunction
   void addData() {
     var url = Uri.parse(
-        "https://hypeapp1.herokuapp.com/eventsproducts_php/addproduct.php");
+        "https://hypeapp1.herokuapp.com/eventsproducts_php/addevent.php");
     http.post(url, body: {
-      "tipo": productoCategoria.text,
-      "nombre": productoNombre.text,
-      "descripcion": productoDescripcion.text,
-      "imagen": productoImagen.text,
-      "precio": productoPrecio.text,
+      "nombre": eventoNombre.text,
+      "tipo_evento": eventoCategoria.text,
+      "fecha": eventoFecha.text,
+      "hora_ini": eventoHoraInicio.text,
+      "hora_fin": eventoHoraFinal.text,
+      "locacion": eventoLocacion.text,
+      "locacion_resp": eventoLocacionRespaldo.text,
+      "descripcion": eventoDescripcion.text,
+      "num_banquete": eventoBanquetes.text,
+      "nom_banquete": eventoTipoBanquetes.text,
+      "num_productoservicio": eventoProductoServicio.text,
+      "tipo_productoservicio": eventoTipoProductoServicio.text,
+      "productoservicio": eventoProductoOServicio.text,
+      "info_extra": eventoInformacionExtra.text,
     });
-    limpiarControllers();
   }
 
   //SELECT   - - - - - - - - - - - -   Verificar consulta
-  Map<String, String> nacionalidadesMap = {}, perfilesMap = {};
-  Map<int, String> categoria = {
-    1: "Producto",
-    2: "Servicio",
-  };
+  Map<String, String> nacionalidadesMap = {},
+      perfilesMap = {},
+      categoria = {
+        "1": "Social",
+        "2": "Empresarial",
+        "3": "Otro",
+      };
 
   @override
   void initState() {
@@ -50,7 +62,7 @@ class _AgregarProductosServicesPage
 
   @override
   void dispose() {
-    limpiarControllers();
+    //limpiarControllers();
     super.dispose();
   }
 
@@ -84,7 +96,7 @@ class _AgregarProductosServicesPage
               Column(
                 children: <Widget>[
                   Text(
-                    "Agregar Producto",
+                    "Agregar Nuevo Evento",
                     style: TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
@@ -105,43 +117,80 @@ class _AgregarProductosServicesPage
                   children: <Widget>[
                     inputFile(
                         label: "Nombre",
+                        hint: "Escribe un nombre de evento",
                         nameController:
-                            productoNombre, //Confirmar nombre del campo
+                            eventoNombre, //Confirmar nombre del campo
+                        maxLength: "40"),
+                    dropdownCategoria(),
+                    inputFile(
+                        label: "Fecha",
+                        hint: "AAAA-MM-DD",
+                        nameController:
+                            eventoFecha, //Confirmar nombre del campo
+                        maxLength: "40"),
+                    inputFile(
+                        label: "Hora inicial",
+                        hint: "Ingresa una hora inicial",
+                        nameController:
+                            eventoHoraInicio, //Confirmar nombre del campo
+                        maxLength: "40"),
+                    inputFile(
+                        label: "Hora Final",
+                        hint: "ingrese una hora final",
+                        nameController:
+                            eventoHoraFinal, //Confirmar nombre del campo
+                        maxLength: "40"),
+                    inputFile(
+                        label: "Locacion",
+                        hint: "ingrese una ubicacion",
+                        nameController:
+                            eventoLocacion, //Confirmar nombre del campo
+                        maxLength: "40"),
+                    inputFile(
+                        label: "Locacion de respaldo",
+                        hint: "Ingrese una ubicacion de respaldo",
+                        nameController:
+                            eventoLocacionRespaldo, //Confirmar nombre del campo
+                        maxLength: "40"),
+                    inputFile(
+                        label: "Descripcion",
+                        hint: "Ingrese una descripcion",
+                        nameController:
+                            eventoDescripcion, //Confirmar nombre del campo
+                        maxLength: "40"),
+                    inputFile(
+                        label: "Numero de banquetes",
+                        hint: "Ingrese un numero de banquetes",
+                        nameController:
+                            eventoBanquetes, //Confirmar nombre del campo
+                        maxLength: "40"),
+                    inputFile(
+                        label: "Nombre del banquete",
+                        nameController:
+                            eventoTipoBanquetes, //Confirmar nombre del campo
+                        maxLength: "40"),
+                    inputFile(
+                        label: "Productos y servicios",
+                        hint: "Ingrese un numero de productos y servicios",
+                        nameController:
+                            eventoProductoServicio, //Confirmar nombre del campo
                         maxLength: "40"),
                     inputFile(
                         label: "Tipo",
                         nameController:
-                            productoCategoria, //Confirmar nombre del campo
+                            eventoTipoProductoServicio, //Confirmar nombre del campo
                         maxLength: "40"),
                     inputFile(
-                        label: "Precio",
+                        label: "Producto o servicio",
                         nameController:
-                            productoPrecio, //Confirmar nombre del campo
+                            eventoProductoOServicio, //Confirmar nombre del campo
                         maxLength: "40"),
-                    //Se agrega un TextField para poder
-                    //tener la opcion multilinea
-                    Text("Descripción:"),
-                    TextField(
-                      readOnly: false,
-                      controller: productoDescripcion,
-                      maxLength: 200,
-                      keyboardType: TextInputType.multiline,
-                      //Nombre de controlador pendiente
-                    ),
-                    Text("Agregar imagen"),
-                    (imagePath == null)
-                        ? Container()
-                        : Image.file(File(imagePath)),
-                    ElevatedButton(
-                      onPressed: () async {
-                        final ImagePicker _picker = ImagePicker();
-                        PickedFile? _pickedFile =
-                            await _picker.getImage(source: ImageSource.gallery);
-                        imagePath = _pickedFile!.path;
-                        setState(() {});
-                      },
-                      child: Text("Examinar..."),
-                    ),
+                    inputFile(
+                        label: "Informacion extra",
+                        hint: "Informacion que podria ser de utilidad conocer",
+                        nameController:
+                            eventoInformacionExtra, //Confirmar nombre del campo
+                        maxLength: "255"),
                   ],
                 ),
               ),
@@ -203,6 +252,12 @@ class _AgregarProductosServicesPage
     );
   }
 
+  Widget mapa() {
+    LatLng cor = LatLng(37.4275, -122.1472);
+    CameraPosition camera = new CameraPosition(target: cor);
+    return GoogleMap(initialCameraPosition: camera);
+  }
+
   Widget dropdownCategoria() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,7 +293,7 @@ class _AgregarProductosServicesPage
     );
   }
 
-  Widget dropdownPerfil() {
+  Widget dropdownPerfil({nameController}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -274,7 +329,7 @@ class _AgregarProductosServicesPage
   }
 
   Widget inputFile(
-      {label, obscureText = false, nameController, maxLength = "16"}) {
+      {label, obscureText = false, nameController, maxLength = "16", hint}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -291,12 +346,42 @@ class _AgregarProductosServicesPage
           controller: nameController,
           obscureText: obscureText,
           validator: (item) {
-            switch (label) {
-              case "Nombre":
-              case "Precio":
-              case "Descripción":
-              case "Agregar imagen":
-            }
+            if (item!.isEmpty) return hint;
+          },
+          decoration: InputDecoration(
+              contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.grey[400]!),
+              ),
+              border: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey[400]!))),
+        ),
+        SizedBox(
+          height: 10,
+        )
+      ],
+    );
+  }
+
+  Widget inputMap(
+      {label, obscureText = false, nameController, maxLength = "16", hint}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          label,
+          style: TextStyle(
+              fontSize: 15, fontWeight: FontWeight.w400, color: Colors.black87),
+        ),
+        SizedBox(
+          height: 5,
+        ),
+        TextFormField(
+          readOnly: _loading == false ? false : true,
+          controller: nameController,
+          obscureText: obscureText,
+          validator: (item) {
+            if (item!.isEmpty) return hint;
           },
           decoration: InputDecoration(
               contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 10),

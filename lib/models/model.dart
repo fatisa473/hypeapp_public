@@ -13,3 +13,17 @@ class CatalogModel {
     this.proveedor = proveedor;
   }
 }
+
+class ProductServiceModel {
+  String idProducto_Servicio = "";
+  String name = "";
+  String idProveedor = "";
+  String proveedor = "";
+
+  ProductServiceModel(idProducto_Servicio, name, idProveedor, proveedor) {
+    this.idProducto_Servicio = idProducto_Servicio;
+    this.name = name;
+    this.idProveedor = idProveedor;
+    this.proveedor = proveedor;
+  }
+}

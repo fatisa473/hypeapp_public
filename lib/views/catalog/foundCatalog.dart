@@ -18,6 +18,7 @@ class _FoundCatalogoTile extends State<FoundCatalogoTile> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Material App',
       home: Scaffold(
         appBar: AppBar(
@@ -61,7 +62,7 @@ class _FoundCatalogoTile extends State<FoundCatalogoTile> {
                         ),
                         Container(
                           //height: 220.0,
-                          width: 280.0,
+                          width: MediaQuery.of(context).size.height / 2.4,
                           //color: Colors.blue,
                           child: Container(
                             padding: const EdgeInsets.all(10),
